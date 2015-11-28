@@ -105,7 +105,7 @@ VS_VERSION_INFO VERSIONINFO
     {
         BLOCK "000004B0"
         {
-            VALUE "Comments", ""
+            VALUE "Comments", "Free for personal and corporate use."
             VALUE "CompanyName", "Jochen Neubeck"
             VALUE "FileDescription", "Plain Text Viewer"
             VALUE "FileVersion", "1.0.0.0"

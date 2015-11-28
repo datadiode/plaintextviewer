@@ -2,9 +2,10 @@
 
 #define $(ID, CP, NAME) const struct \
 	{ \
+		unsigned short id; \
 		unsigned short cp; \
 		char name[sizeof NAME]; \
-	} $##ID = { CP, NAME };
+	} $##ID = { ID, CP, NAME };
 
 $(3,	20127,	"us-ascii")
 $(4,	28591,	"iso-8859-1")

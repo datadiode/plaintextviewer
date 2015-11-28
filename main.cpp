@@ -29,6 +29,7 @@
 #include "EncodingInfo.h"
 
 static HINSTANCE hInstance;
+static HINSTANCE hCharsets;
 
 static struct {
 	VersionData const *const pVersionData;
@@ -36,12 +37,14 @@ static struct {
 	LPCWSTR const ProductName;
 	LPCWSTR const ProductVersion;
 	LPCWSTR const LegalCopyright;
+	LPCWSTR const Comments;
 } VersionInfo = {
 	VersionData::Load(),
 	VersionInfo.pVersionData->Find(L"StringFileInfo")->First(),
 	VersionInfo.pStringFileInfo->Find(L"ProductName")->Data(),
 	VersionInfo.pStringFileInfo->Find(L"ProductVersion")->Data(),
 	VersionInfo.pStringFileInfo->Find(L"LegalCopyright")->Data(),
+	VersionInfo.pStringFileInfo->Find(L"Comments")->Data(),
 };
 
 static TCHAR IniPath[MAX_PATH];
@@ -508,7 +511,9 @@ void MainWindow::AboutBox()
 	params.hInstance = hInstance;
 	params.lpszCaption = _T("About Plain Text Viewer");
 	TCHAR text[1024];
-	wsprintf(text, _T("%ls v%ls\n%ls"), VersionInfo.ProductName, VersionInfo.ProductVersion, VersionInfo.LegalCopyright);
+	wsprintf(text, _T("%ls v%ls\n%ls\n%ls"),
+		VersionInfo.ProductName, VersionInfo.ProductVersion,
+		VersionInfo.LegalCopyright, VersionInfo.Comments);
 	params.lpszText = text;
 	params.lpszIcon = MAKEINTRESOURCE(1);
 	params.hwndOwner = m_hwnd;
@@ -610,7 +615,7 @@ void MainWindow::SetEncodingInfoFromName(char *name)
 	if (name != NULL)
 	{
 		RemoveLeadingZeros(name);
-		m_encodinginfo = EncodingInfo::From(hInstance, name);
+		m_encodinginfo = EncodingInfo::From<IMAGE_NT_HEADERS32>(hCharsets, name);
 		if (m_encodinginfo == NULL)
 		{
 			if (sscanf(name, "windows-%hu",	&m_genericencodinginfo.cp) == 1 ||
@@ -1072,7 +1077,7 @@ int MainWindow::InitCodePageMenu(HMENU menu, int n)
 				mii.fState = 0;
 				if (m_codepage == codepage)
 					mii.fState |= MFS_CHECKED;
-				if (WideCharToMultiByte(codepage, 0, L"", 1, NULL, 0, NULL, NULL) == 0)
+				if (!IsValidCodePage(codepage))
 					mii.fState |= MFS_GRAYED;
 				if (LPTSTR q = _tcschr(mii.dwTypeData, _T('=')))
 					*q = _T('\t');
@@ -2232,6 +2237,8 @@ void MainWindow::DoStep(int direction, int shift)
 int APIENTRY _tWinMain(HINSTANCE hInst, HINSTANCE, TCHAR* arg, int iCmdShow)
 {
 	hInstance = hInst;
+	SetDllDirectory(_T(""));
+	hCharsets = LoadLibraryEx(_T("character-sets.dll"), NULL, LOAD_LIBRARY_AS_DATAFILE);
 	CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
 	OleInitialize(NULL);
 	InitCommonControls();
