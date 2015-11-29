@@ -511,9 +511,14 @@ void MainWindow::AboutBox()
 	params.hInstance = hInstance;
 	params.lpszCaption = _T("About Plain Text Viewer");
 	TCHAR text[1024];
-	wsprintf(text, _T("%ls v%ls\n%ls\n%ls"),
-		VersionInfo.ProductName, VersionInfo.ProductVersion,
-		VersionInfo.LegalCopyright, VersionInfo.Comments);
+	wsprintf(text, _T("%ls v%ls\n%ls\ncharacter-sets.dll v%ls\n%ls"),
+		VersionInfo.ProductName,
+		VersionInfo.ProductVersion,
+		VersionInfo.LegalCopyright,
+		hCharsets ? VersionData::Load(hCharsets)
+			->Find(L"StringFileInfo")->First()
+			->Find(L"FileVersion")->Data() : L"<missing>",
+		VersionInfo.Comments);
 	params.lpszText = text;
 	params.lpszIcon = MAKEINTRESOURCE(1);
 	params.hwndOwner = m_hwnd;
