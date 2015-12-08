@@ -1526,6 +1526,14 @@ LRESULT MainWindow::DoMsg(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			SetTabWidth(m_tabwidth);
 			break;
 
+		case MAKEWPARAM(IDC_LINE, EN_SETFOCUS):
+			DoStep(0, GetKeyState(VK_CONTROL) < 0 ? 2 : 0);
+			break;
+
+		case MAKEWPARAM(IDC_LINE, EN_KILLFOCUS):
+			DoStep(0);
+			break;
+
 		case MAKEWPARAM(IDC_TEXT, EN_SETFOCUS):
 			ShowWindow(m_hwndStatus, SW_HIDE);
 			break;
@@ -1584,7 +1592,7 @@ LRESULT MainWindow::DoMsg(Subclass::DlgItem<IDC_LINE> &DlgItem, HWND hwnd, UINT 
 				{
 					if (dwSelStart == dwSelEnd || (dwSelStart = --dwSelEnd) > 0)
 						--dwSelStart;
-					if (dwSelStart <= dwSelEnd)
+					if (dwSelStart < dwSelEnd)
 						SendMessage(hwnd, EM_SETSEL, dwSelStart, dwSelEnd);
 				}
 				return 0;
@@ -1593,7 +1601,7 @@ LRESULT MainWindow::DoMsg(Subclass::DlgItem<IDC_LINE> &DlgItem, HWND hwnd, UINT 
 				{
 					if (dwSelStart == dwSelEnd || (dwSelEnd = ++dwSelStart) < dwTextLength)
 						++dwSelEnd;
-					if (dwSelStart <= dwSelEnd)
+					if (dwSelStart < dwSelEnd)
 						SendMessage(hwnd, EM_SETSEL, dwSelStart, dwSelEnd);
 				}
 				return 0;
@@ -1602,6 +1610,15 @@ LRESULT MainWindow::DoMsg(Subclass::DlgItem<IDC_LINE> &DlgItem, HWND hwnd, UINT 
 				return 0;
 			case VK_DOWN:
 				DoStep(+delta, shift);
+				return 0;
+			case VK_HOME:
+				SendMessage(hwnd, EM_SETSEL, 0, 1);
+				return 0;
+			case VK_END:
+				SendMessage(hwnd, EM_SETSEL, dwTextLength - 1, dwTextLength);
+				return 0;
+			case VK_CONTROL:
+				DoStep(0, 2);
 				return 0;
 			}
 		}
@@ -1622,6 +1639,14 @@ LRESULT MainWindow::DoMsg(Subclass::DlgItem<IDC_LINE> &DlgItem, HWND hwnd, UINT 
 				DoStep(+1);
 				return 0;
 			}
+		}
+		break;
+	case WM_KEYUP:
+		switch (wParam)
+		{
+		case VK_CONTROL:
+			DoStep(0);
+			return 0;
 		}
 		break;
 	}
@@ -2227,7 +2252,9 @@ void MainWindow::DoStep(int direction, int shift)
 			i = n;
 		else if (i < 1)
 			i = 1;
-		SetDlgItemInt(m_hwnd, IDC_LINE, i, FALSE);
+		TCHAR text[16];
+		wsprintf(text, shift ? _T("%010u") : _T("%u"), i);
+		SetDlgItemText(m_hwnd, IDC_LINE, text);
 		int lower = 0;
 		int upper = GetWindowTextLength(m_hwndLine);
 		if (shift > 0 && shift <= upper)
