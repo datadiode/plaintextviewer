@@ -1199,11 +1199,11 @@ void MainWindow::DoActivate(WPARAM wParam)
 	// (Un)establish hotkeys
 	if (wParam != WA_INACTIVE)
 	{
-		RegisterHotKey(m_hwnd, VK_F5, 0, VK_F5);
+		RegisterHotKey(m_hwnd, IDM_REFRESH, 0, VK_F5);
 	}
 	else
 	{
-		UnregisterHotKey(m_hwnd, VK_F5);
+		UnregisterHotKey(m_hwnd, IDM_REFRESH);
 	}
 	// (Un)establish drop targets
 	if (IsWindowVisible(m_hwnd) && IsWindowEnabled(m_hwnd))
@@ -1451,14 +1451,9 @@ LRESULT MainWindow::DoMsg(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		break;
 
 	case WM_HOTKEY:
-		switch (wParam)
-		{
-		case VK_F5:
-			Refresh();
+		if (GetMenuState(m_menu, static_cast<UINT>(wParam), MF_BYCOMMAND) & (MF_DISABLED | MF_GRAYED))
 			break;
-		}
-		break;
-
+		// fall through
 	case WM_COMMAND:
 		switch (wParam)
 		{
