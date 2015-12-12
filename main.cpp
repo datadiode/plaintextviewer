@@ -2104,11 +2104,14 @@ void MainWindow::DoSearch(int direction)
 			{
 				m_index[HIWORD(i)][LOWORD(i)].flags &= ~1;
 			}
-			UINT const use_agrep = GetMenuState(m_menu, IDM_USE_AGREP, MF_BYCOMMAND) & MF_CHECKED;
 			if (BSTR text = GetWindowText(m_hwndText))
 			{
+				UINT const use_agrep = GetMenuState(m_menu, IDM_USE_AGREP, MF_BYCOMMAND) & MF_CHECKED;
+				UINT const no_regexp = GetMenuState(m_menu, IDM_LITERAL, MF_BYCOMMAND) & MF_CHECKED;
+				UINT const ignore_case = GetMenuState(m_menu, IDM_IGNORE_CASE, MF_BYCOMMAND) & MF_CHECKED;
+				UINT const invert = GetMenuState(m_menu, IDM_INVERT, MF_BYCOMMAND) & MF_CHECKED;
 				// Apply convenience shortcuts for FINDSTR only when not using AGREP
-				if (!use_agrep)
+				if (!use_agrep && !no_regexp)
 				{
 					if (UINT count = ResolveRepetitionOperators(CountingPointer<OLECHAR>(), text))
 					{
@@ -2143,11 +2146,11 @@ void MainWindow::DoSearch(int direction)
 							*args++ = 'w';
 						if (GetMenuState(m_menu, IDM_NOTHING, MF_BYCOMMAND) & MF_CHECKED)
 							*args++ = 'y';
-						if (GetMenuState(m_menu, IDM_LITERAL, MF_BYCOMMAND) & MF_CHECKED)
+						if (no_regexp)
 							*args++ = 'k';
-						if (GetMenuState(m_menu, IDM_IGNORE_CASE, MF_BYCOMMAND) & MF_CHECKED)
+						if (ignore_case)
 							*args++ = 'i';
-						if (GetMenuState(m_menu, IDM_INVERT, MF_BYCOMMAND) & MF_CHECKED)
+						if (invert)
 							*args++ = 'v';
 						if (m_delimiter >= '!')
 							args += wsprintf(args, _T("Md%c"), m_delimiter);
@@ -2163,13 +2166,13 @@ void MainWindow::DoSearch(int direction)
 							*args++ = 'B';
 						if (GetMenuState(m_menu, IDM_ENDS_WITH, MF_BYCOMMAND) & MF_CHECKED)
 							*args++ = 'E';
-						if (GetMenuState(m_menu, IDM_LITERAL, MF_BYCOMMAND) & MF_CHECKED)
+						if (no_regexp)
 							*args++ = 'L';
 						else
 							*args++ = 'R';
-						if (GetMenuState(m_menu, IDM_IGNORE_CASE, MF_BYCOMMAND) & MF_CHECKED)
+						if (ignore_case)
 							*args++ = 'I';
-						if (GetMenuState(m_menu, IDM_INVERT, MF_BYCOMMAND) & MF_CHECKED)
+						if (invert)
 							*args++ = 'V';
 					}
 					args += wsprintf(args, _T(" \""));
