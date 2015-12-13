@@ -261,6 +261,7 @@ private:
 
 	LRESULT DoCustomDraw(NMLVCUSTOMDRAW *);
 	LRESULT DoItemActivate(NMITEMACTIVATE *);
+	LRESULT DoItemChanged(NMLISTVIEW *);
 	LRESULT DoKeydown(NMLVKEYDOWN *);
 	LRESULT DoGetObject(NMOBJECTNOTIFY *);
 
@@ -796,6 +797,17 @@ LRESULT MainWindow::DoItemActivate(NMITEMACTIVATE *pnm)
 	return 0;
 }
 
+LRESULT MainWindow::DoItemChanged(NMLISTVIEW *pnm)
+{
+	if ((pnm->uChanged & LVIF_STATE) &&
+		(pnm->uNewState & LVIS_FOCUSED) > (pnm->uOldState & LVIS_FOCUSED) &&
+		GetFocus() == pnm->hdr.hwndFrom)
+	{
+		SetDlgItemInt(m_hwnd, IDC_LINE, pnm->iItem + 1, FALSE);
+	}
+	return 0;
+}
+
 LRESULT MainWindow::DoKeydown(NMLVKEYDOWN *pnm)
 {
 	WORD wMod = 0;
@@ -1287,6 +1299,11 @@ LRESULT MainWindow::DoMsg(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				return DoItemActivate(reinterpret_cast<NMITEMACTIVATE *>(lParam));
 			case LVN_KEYDOWN:
 				return DoKeydown(reinterpret_cast<NMLVKEYDOWN *>(lParam));
+			case NM_RELEASEDCAPTURE:
+				SetFocus(reinterpret_cast<NMHDR *>(lParam)->hwndFrom);
+				break;
+			case LVN_ITEMCHANGED:
+				return DoItemChanged(reinterpret_cast<NMLISTVIEW *>(lParam));
 			}
 			break;
 		case IDC_DROPTARGET:
@@ -2088,10 +2105,13 @@ void MainWindow::Open(LPCTSTR path, WORD mode)
 
 void MainWindow::SelectLine(int i)
 {
-	ListView_SetItemState(m_hwndList, -1, 0, LVIS_SELECTED);
-	ListView_SetItemState(m_hwndList, i, LVIS_FOCUSED | LVIS_SELECTED, LVIS_FOCUSED | LVIS_SELECTED);
-	ListView_EnsureVisible(m_hwndList, i, FALSE);
-	ListView_SetSelectionMark(m_hwndList, i);
+	if (ListView_GetItemState(m_hwndList, i, LVIS_FOCUSED) == 0)
+	{
+		ListView_SetItemState(m_hwndList, -1, 0, LVIS_SELECTED);
+		ListView_SetItemState(m_hwndList, i, LVIS_FOCUSED | LVIS_SELECTED, LVIS_FOCUSED | LVIS_SELECTED);
+		ListView_SetSelectionMark(m_hwndList, i);
+		ListView_EnsureVisible(m_hwndList, i, FALSE);
+	}
 }
 
 void MainWindow::DoSearch(int direction)
@@ -2233,10 +2253,18 @@ void MainWindow::DoSearch(int direction)
 			else if (i < 0)
 				i = n - 1;
 		} while ((m_index[HIWORD(i)][LOWORD(i)].flags & 1) == 0 && i != j);
-		if (i != j)
+		if ((m_index[HIWORD(i)][LOWORD(i)].flags & 1) == 0)
+		{
+			ListView_SetItemState(m_hwndList, -1, 0, LVIS_FOCUSED | LVIS_SELECTED);
+		}
+		else if (i != j)
+		{
 			SetDlgItemInt(m_hwnd, IDC_LINE, i + 1, FALSE);
+		}
 		else
-			ListView_SetItemState(m_hwndList, -1, 0, LVIS_SELECTED);
+		{
+			ListView_EnsureVisible(m_hwndList, i, FALSE);
+		}
 	}
 }
 
