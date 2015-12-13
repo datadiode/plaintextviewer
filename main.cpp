@@ -539,7 +539,8 @@ BSTR MainWindow::Transcode(BSTR text) const
 	default:
 		if (BSTR wide = SysAllocStringLen(NULL, count))
 		{
-			count = MultiByteToWideChar(m_codepage, m_codepage != CP_UTF8 ? MB_USEGLYPHCHARS : 0, reinterpret_cast<LPSTR>(text), count, wide, count);
+			DWORD const flags = (m_codepage != CP_UTF7) && (m_codepage != CP_UTF8) ? MB_USEGLYPHCHARS : 0;
+			count = MultiByteToWideChar(m_codepage, flags, reinterpret_cast<LPSTR>(text), count, wide, count);
 			SysReAllocStringLen(&wide, NULL, count);
 			SysFreeString(text);
 			text = wide;
@@ -1336,6 +1337,7 @@ LRESULT MainWindow::DoMsg(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			if (CheckMenuItem(menu, IDM_CODEPAGE_ANSI, m_codepage == CP_ACP ? MF_CHECKED : MF_UNCHECKED) != 0xFFFFFFFF)
 			{
 				CheckMenuItem(menu, IDM_CODEPAGE_OEM, m_codepage == CP_OEMCP ? MF_CHECKED : MF_UNCHECKED);
+				CheckMenuItem(menu, IDM_CODEPAGE_UTF7, m_codepage == CP_UTF7 ? MF_CHECKED : MF_UNCHECKED);
 				CheckMenuItem(menu, IDM_CODEPAGE_UTF8, m_codepage == CP_UTF8 ? MF_CHECKED : MF_UNCHECKED);
 				CheckMenuItem(menu, IDM_CODEPAGE_UCS2LE, m_codepage == 1200 ? MF_CHECKED : MF_UNCHECKED);
 				CheckMenuItem(menu, IDM_CODEPAGE_UCS2BE, m_codepage == 1201 ? MF_CHECKED : MF_UNCHECKED);
@@ -1368,6 +1370,9 @@ LRESULT MainWindow::DoMsg(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				break;
 			case IDM_CODEPAGE_OEM:
 				SetCodePage(CP_OEMCP);
+				break;
+			case IDM_CODEPAGE_UTF7:
+				SetCodePage(CP_UTF7);
 				break;
 			case IDM_CODEPAGE_UTF8:
 				SetCodePage(CP_UTF8);
@@ -1527,6 +1532,7 @@ LRESULT MainWindow::DoMsg(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 		case IDM_CODEPAGE_ANSI:
 		case IDM_CODEPAGE_OEM:
+		case IDM_CODEPAGE_UTF7:
 		case IDM_CODEPAGE_UTF8:
 		case IDM_CODEPAGE_UCS2LE:
 		case IDM_CODEPAGE_UCS2BE:

@@ -18,6 +18,7 @@
 #define IDC_IDIOMS                              40004
 #define IDM_IGNORE_CASE                         40004
 #define IDC_SCROLL                              40005
+#define IDM_CODEPAGE_UTF7                       40005
 #define IDM_USE_AGREP                           40006
 #define IDM_ABOUT                               40007
 #define IDM_STOP                                40008
