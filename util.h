@@ -150,7 +150,7 @@ LPTSTR EscapeArgument(LPTSTR p, LPCTSTR q);
 LPTSTR EatPrefix(LPCTSTR text, LPCTSTR prefix, BOOL strict = FALSE);
 BSTR ExpandTabs(BSTR text, UINT tabwidth);
 BSTR GetWindowText(HWND);
-
+BSTR GetMenuSelText(HMENU, int, UINT);
 int CheckMenuInt(HMENU, int, UINT, int);
 int ParseMenuInt(HMENU, int, UINT);
 

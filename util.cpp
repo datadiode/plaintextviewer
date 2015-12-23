@@ -139,6 +139,25 @@ BSTR GetWindowText(HWND hwnd)
 	return text;
 }
 
+BSTR GetMenuSelText(HMENU menu, int n, UINT id)
+{
+	BSTR text = NULL; 
+	while (n > 0 && GetMenuItemID(menu, --n) == id)
+	{
+		if (GetMenuState(menu, n, MF_BYPOSITION) & MF_HILITE)
+		{
+			UINT len = GetMenuString(menu, n, NULL, 0, MF_BYPOSITION);
+			text = SysAllocStringLen(NULL, len);
+			if (text != NULL)
+			{
+				GetMenuString(menu, n, text, len + 1, MF_BYPOSITION);
+			}
+			break;
+		}
+	}
+	return text;
+}
+
 int CheckMenuInt(HMENU menu, int n, UINT id, int value)
 {
 	int i;

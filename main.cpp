@@ -88,6 +88,22 @@ static BOOL FilenameExtensionQualifiesAs(LPCTSTR ext, LPCTSTR tag)
 		&& PathMatchSpec(ext[0] == _T('.') && ext[1] != _T('\0') ? ext + 1 : _T("."), buf);
 }
 
+static UINT CodePageFromMenuText(BSTR q)
+{
+	PathRemoveArgs(q);
+	SHStripMneumonic(q);
+	char *const p = reinterpret_cast<char *>(CharLower(q));
+	int i = 0;
+	while ((p[i] = static_cast<char>(q[i])) != '\0') ++i;
+	RemoveLeadingZeros(p);
+	UINT codepage = 0;
+	if (strchr(p, '\t'))
+		codepage = atoi(p);
+	else if (EncodingInfo const *encodinginfo = EncodingInfo::From<IMAGE_NT_HEADERS32>(hCharsets, p))
+		codepage = encodinginfo->cp;
+	return codepage;
+}
+
 struct LineData
 {
 	DWORD LowPart;
@@ -1074,7 +1090,7 @@ int MainWindow::InitCodePageMenu(HMENU menu, int n)
 	{
 		mii.fState = m_encodinginfo->cp == 0 ? MFS_GRAYED :
 			m_encodinginfo->cp == m_codepage ? MFS_CHECKED : MFS_UNCHECKED;
-		wsprintf(buf, _T("%u\t%hs"), m_encodinginfo->cp, m_encodinginfo->name);
+		wsprintf(buf, _T("%hs"), m_encodinginfo->name);
 		InsertMenuItem(menu, ++n, TRUE, &mii);
 	}
 	if (GetPrivateProfileSection(_T("CodePages"), buf, _countof(buf), IniPath))
@@ -1091,14 +1107,19 @@ int MainWindow::InitCodePageMenu(HMENU menu, int n)
 					mii.fType |= MFT_SEPARATOR;
 				else
 					mii.fType |= MFT_RADIOCHECK;
-				UINT codepage = _ttoi(mii.dwTypeData);
+				if (LPTSTR q = _tcschr(mii.dwTypeData, _T('=')))
+					*q = _T('\t');
+				UINT codepage = 0;
+				if (BSTR q = SysAllocStringLen(mii.dwTypeData, len))
+				{
+					codepage = CodePageFromMenuText(q);
+					SysFreeString(q);
+				}
 				mii.fState = 0;
 				if (m_codepage == codepage)
 					mii.fState |= MFS_CHECKED;
 				if (!IsValidCodePage(codepage))
 					mii.fState |= MFS_GRAYED;
-				if (LPTSTR q = _tcschr(mii.dwTypeData, _T('=')))
-					*q = _T('\t');
 				InsertMenuItem(menu, ++n, TRUE, &mii);
 				mii.fType = 0;
 			}
@@ -1384,8 +1405,12 @@ LRESULT MainWindow::DoMsg(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				SetCodePage(1201);
 				break;
 			case IDM_CODEPAGE_CUSTOM:
-				if (UINT codepage = ParseMenuInt(menu, n, id))
+				if (BSTR q = GetMenuSelText(menu, n, id))
+				{
+					UINT codepage = CodePageFromMenuText(q);
+					SysFreeString(q);
 					SetCodePage(codepage);
+				}
 				break;
 			}
 		}
