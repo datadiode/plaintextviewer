@@ -3,8 +3,8 @@
 
 LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
 VS_VERSION_INFO VERSIONINFO
-	FILEVERSION     100,2013,12,20
-	PRODUCTVERSION  100,2013,12,20
+	FILEVERSION     200,2013,12,20
+	PRODUCTVERSION  200,2013,12,20
 	FILEOS          VOS_NT_WINDOWS32
 	FILETYPE        VFT_DLL
 {
@@ -15,8 +15,8 @@ VS_VERSION_INFO VERSIONINFO
 			VALUE "Comments", "Free for corporate and personal use."
 			VALUE "CompanyName", "Jochen Neubeck"
 			VALUE "FileDescription", "character-sets.dll"
-			VALUE "FileVersion", "100.2013.12.20"
-			VALUE "LegalCopyright", "© 2015 Jochen Neubeck"
+			VALUE "FileVersion", "200.2013.12.20"
+			VALUE "LegalCopyright", "© 2015-2017 Jochen Neubeck"
 		}
 	}
 	BLOCK "VarFileInfo"

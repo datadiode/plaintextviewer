@@ -32,7 +32,7 @@
 			<xsl:when test="assignments:value='11'">,	28598,	</xsl:when>
 			<xsl:when test="assignments:value='12'">,	28599,	</xsl:when>
 			<xsl:when test="assignments:value='17'">,	932,	</xsl:when>
-			<xsl:when test="assignments:value='18'">,	51932,	</xsl:when>
+			<xsl:when test="assignments:value='18'">,	20932,	</xsl:when>
 			<xsl:when test="assignments:value='24'">,	20106,	</xsl:when>
 			<xsl:when test="assignments:value='25'">,	20108,	</xsl:when>
 			<xsl:when test="assignments:value='30'">,	20105,	</xsl:when>
